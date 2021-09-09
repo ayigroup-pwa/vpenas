@@ -35,19 +35,18 @@ button.addEventListener('click', function(event) {
 
 //Fetch original usado hasta el task 4
 
-fetch('https://httpbin.org/ip')
-  .then(function(res) {
-    return res.json();
-  })
-  .then(function(data) {
-    console.log(data.origin);
-    box.style.height = (data.origin.substr(0, 2) * 5) + 'px';
-  });
+// fetch('https://httpbin.org/ip')
+//   .then(function(res) {
+//     return res.json();
+//   })
+//   .then(function(data) {
+//     console.log(data.origin);
+//     box.style.height = (data.origin.substr(0, 2) * 5) + 'px';
+//   });
 
 
 //Fetch para los tasks 5 y 6
-
-/*
+//Flags from Developers Google documentation
 let url = 'https://httpbin.org/ip';
 let networkDataReceived = false;
 
@@ -78,4 +77,3 @@ if ('caches' in window) {
     }
   });
 }
-*/

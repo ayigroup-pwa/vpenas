@@ -18,8 +18,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_STATIC_NAME)
       .then(function(cache) {
-        cache.addAll(filesToCache), 
-        console.log('Creando caché estática')
+        cache.addAll(filesToCache)
       })
   )
   
@@ -41,31 +40,31 @@ self.addEventListener('activate', function(event) {
 
 // 1. La estrategia de cacheo actual es "Cache first" o también llamada "Cache with network fallback"
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request) //busca en el cache primero
-      .then(function(response) {
-        if (response) {
-          console.log("Hubo response del fetch")
-          return response; //Si hay cache trae cache
-        } else {
-          return fetch(event.request) //Si no hay cache fetchea al network
-            .then(function(res) {
-              return caches.open(CACHE_DYNAMIC_NAME) // crea la cache dinamica
-                .then(function(cache) {
-                  console.log("Actualiza el cache dinámico")
+// self.addEventListener('fetch', function(event) {
+//   event.respondWith(
+//     caches.match(event.request) //busca en el cache primero
+//       .then(function(response) {
+//         if (response) {
+//           console.log("Hubo response del fetch")
+//           return response; //Si hay cache trae cache
+//         } else {
+//           return fetch(event.request) //Si no hay cache fetchea al network
+//             .then(function(res) {
+//               return caches.open(CACHE_DYNAMIC_NAME) // crea la cache dinamica
+//                 .then(function(cache) {
+//                   console.log("Actualiza el cache dinámico")
 
-                  cache.put(event.request.url, res.clone()); //actualiza el cache
-                  return res; // actualiza la pagina
-                });
-            })
-            .catch(function(err) {
-              console.log(err);
-            });
-        }
-      })
-  );
-});
+//                   cache.put(event.request.url, res.clone()); //actualiza el cache
+//                   return res; // actualiza la pagina
+//                 });
+//             })
+//             .catch(function(err) {
+//               console.log(err);
+//             });
+//         }
+//       })
+//   );
+// });
 
 
 //2. Reemplazada por "Network only"
@@ -125,5 +124,63 @@ self.addEventListener('fetch', event => {
 //   );
 // });
 
-// 6. Routing de Cache then network --- Cache with network fallback --- Cache only
+
+// 6. Routing
+
+//Validation of URL, code from Class 7
+function isInArray(string, array) {
+  let cachePath;
+  if (string.indexOf(self.origin) === 0) { 
+    cachePath = string.substring(self.origin.length);
+  } else {
+    cachePath = string;
+  }
+  return array.indexOf(cachePath) > -1;
+}
+
+self.addEventListener('fetch', event => {
+
+  let url = 'https://httpbin.org/ip';
+  if (event.request.url.indexOf(url) > -1) { // Previamente "url === 'https://httpbin.org/ip'""
+    console.log('Cache, then network');
+    //Strategy 1 -> Cache then network
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          return caches.open(CACHE_DYNAMIC_NAME)
+            .then(cache => {
+              cache.put(event.request.url, response.clone());
+              return response;
+            })
+        })
+    );
+  } else if (isInArray(event.request.url, filesToCache)) {
+    //Strategy 2 -> Cache only
+    event.respondWith(
+      caches.match(event.request.url)
+    );
+  } else {
+    //Strategy 3 -> Cache with network fallback
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) {
+            return response;
+          } else {
+            return fetch(event.request)
+              .then(response => {
+                return caches.open(CACHE_DYNAMIC_NAME)
+                  .then(cache => {
+                    cache.put(event.request.url, response.clone());
+                    return response;
+                  });
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          }
+        })
+    );
+  }
+});
 
