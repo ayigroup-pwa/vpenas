@@ -68,29 +68,35 @@ self.addEventListener('activate', function(event) {
 // });
 
 
-//2. Reemplazada por "Network only"
+//2. Reemplazada por "Network only". 
+//Great for elements that have no presence offline, like analytics, pings or non-GET requests.
 
 /*
 self. addEventListener('fetch', function (event) {
   event.respondWith(
     fetch(event.request)
   );
+  //We can simply don't call "event.respondWith", mhich will result in default browser behavior
 });
 */
 
 
-//3. Reemplazada por "Cache only"
+//3. Reemplazada por "Cache only". 
+//Ideal strategy for anything considered static in our website.
 
 /*
 self.addEventListener('fetch', function (event) {
   event.respondWith(
-    caches.match(event.request) //Aca va event.request.url?
+    caches.match(event.request)
   );
 })
 */
 
 
-//4. Reemplazada por "Network, cache fallback"
+//4. Reemplazada por "Network, cache fallback". 
+//Ideal as quick fix for resources that update frequently no matter what the version of your site. 
+//Ex.: avatars, social media timelines, and game leaderboards.
+//Flaw: If the user has a an intermittent or slow connection, they'll have to wait for the network to fail before the get the content already on their device.
 
 /*
 self.addEventListener('fetch', event => {
@@ -111,6 +117,8 @@ self.addEventListener('fetch', event => {
 */
 
 // 5. Reemplazada con "Cache, then network" (Continúa en el main.js)
+//Works well for content that updates frequently. The SW makes two requests: one to the cache, one to the network, and the idea is to show the cached data first
+// and then update the page when, or if, the network data arrives.
 
 // self.addEventListener('fetch', event => {
 //   event.respondWith(
